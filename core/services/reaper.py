@@ -3,6 +3,7 @@ import datetime
 from database.models import Task, Status
 from database.connection import AsyncSessionLocal
 from sqlalchemy import select, and_
+from core.utils import logger as reaper_logger
 
 class Reaper:
     def __init__(
@@ -31,12 +32,10 @@ class Reaper:
                     result = await db.execute(stmt)
                     tasks = result.scalars().all()
 
-                    if not tasks:
-                        await asyncio.sleep(self.interval)
-
                     for task in tasks:
                         if task.retry_attempts >= task.retry_limit:
                             task.status = Status.DEAD
+                            reaper_logger.info(f"Task: {task.name}\nWith id: {task.id}\nChanged to dead: {task.retry_attempts} is now on limit")
                             continue
 
                         task.retry_attempts += 1
@@ -46,10 +45,7 @@ class Reaper:
 
                         task.updated_at = now
                         task.timeout_at = None
+                        
+                        reaper_logger.info(f"Task: {task.name}\nWith id: {task.id}\nReturned to PENDING\nAttempt: {task.retry_attempts}")
 
             await asyncio.sleep(self.interval)
-                    
-
-
-
-

@@ -1,6 +1,7 @@
 import asyncio
 from core.worker.registry.registry import Registry
 from core.worker.core.executor import get_next_task, complete_task, fail_task, update_heartbeat
+from core.utils import logger as worker_logger
 
 class Worker:
     def __init__(
@@ -19,6 +20,7 @@ class Worker:
             if task is None:
                 await asyncio.sleep(5)
             else:
+                worker_logger.info(f"Got task: {task.name}\nWith id: {task.id}\nWorker id: {self.worker_id}")
                 try:
                     handler_cls = self.reg.get(task.name)
                     handler = handler_cls()
@@ -28,7 +30,9 @@ class Worker:
                     finally:
                         heartbeat.cancel()
                     await complete_task(task.id)
-                except Exception:
+                    worker_logger.info(f"Task: {task.name}\nWith id: {task.id} completed\nWorker id: {self.worker_id}")
+                except Exception as e:
+                    worker_logger.error(f"Task: {task.name}\nWith id: {task.id}\nFailed: {e}\nWorker id: {self.worker_id}")
                     await fail_task(task.id)
 
     async def _heartbeat_loop(self, task_id, interval = 10):
