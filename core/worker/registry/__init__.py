@@ -1,0 +1,1 @@
+from core.worker.registry.registry import registry
