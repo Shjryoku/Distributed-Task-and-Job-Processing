@@ -1,14 +1,16 @@
 import asyncio
 import pytest
+import sys
 from httpx import AsyncClient, ASGITransport
 from core.api.router import app
 from database.connection import AsyncSessionLocal
 from sqlalchemy import delete
 from database.models import Task
 
-asyncio.set_event_loop_policy(
-    asyncio.WindowsSelectorEventLoopPolicy()
-)
+if sys.platform == "win32": 
+    asyncio.set_event_loop_policy(
+        asyncio.WindowsSelectorEventLoopPolicy()
+    )
 
 @pytest.fixture
 async def client():
