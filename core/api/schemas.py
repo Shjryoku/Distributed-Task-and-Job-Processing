@@ -49,6 +49,16 @@ class TaskResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+class TaskSchedule(BaseModel):
+    name: str
+    priority: int
+
+    payload: dict = {}
+    scheduled_at: datetime.datetime
+
+    retry_limit: int = 3
+    idempotency_key: Optional[str] = None
+
 
 class WorkerAssign(BaseModel):
     worker_id: str

@@ -14,6 +14,7 @@ class Status(str, enum.Enum):
     DEAD = "dead"
     DONE = "done"
     CANCELLED = "cancelled"
+    SCHEDULED = "scheduled"
 
 class Base(DeclarativeBase):
     pass
@@ -39,3 +40,4 @@ class Task(Base):
 
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    scheduled_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(timezone=True), nullable=True)

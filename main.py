@@ -5,6 +5,7 @@ from config.settings import settings
 from core.services.reaper import Reaper
 from core.worker.core.worker import Worker
 from core.worker.registry import registry
+from core.utils.scheduler import Scheduler
 import core.worker.handlers.email
 
 def loop_factory():
@@ -13,6 +14,7 @@ def loop_factory():
 async def main():
     worker = Worker(worker_id="worker_1", timeout_sec=300, reg=registry)
     reaper = Reaper(interval=10)
+    scheduler = Scheduler(interval=5)
 
     server = uvicorn.Server(uvicorn.Config(
         "core.api.router:app",
@@ -23,7 +25,8 @@ async def main():
     await asyncio.gather(
         server.serve(),
         worker.run(), 
-        reaper.run()
+        reaper.run(),
+        scheduler.run()
     )
 
 

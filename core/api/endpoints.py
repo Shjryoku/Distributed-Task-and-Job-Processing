@@ -3,7 +3,7 @@ import uuid
 from database.connection import get_db
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from core.api.schemas import TaskCreate, TaskResponse, WorkerAssign
+from core.api.schemas import TaskCreate, TaskResponse, TaskSchedule, WorkerAssign
 from database.models import Task, Status
 from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError
@@ -44,6 +44,21 @@ async def get_next_task(
 
     return task
     
+
+@router.post("/schedule", status_code=201)
+async def schedule_task(
+    task_data: TaskSchedule,
+    db: AsyncSession = Depends(get_db)
+    ):
+    task = Task(
+        **task_data.model_dump(),
+        status = Status.SCHEDULED
+    )
+    db.add(task)
+    await db.commit()
+    await db.refresh(task)
+    
+    return task
 
 @router.post("/", response_model=TaskResponse, status_code=201)
 async def create_task(
