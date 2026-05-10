@@ -8,3 +8,5 @@ redis[asyncio]
 alembic
 pydantic-settings
 psycopg
+prometheus-fastapi-instrumentator
+prometheus-client

@@ -1,17 +1,24 @@
 import uvicorn
 import asyncio
 import selectors
+import subprocess
+import sys
+import platform
 from config.settings import settings
 from core.services.reaper import Reaper
 from core.worker.core.worker import Worker
 from core.worker.registry import registry
 from core.utils.scheduler import Scheduler
-import core.worker.handlers.email
 
 def loop_factory():
     return asyncio.SelectorEventLoop(selectors.SelectSelector())
 
 async def main():
+    subprocess.run(
+        [sys.executable, "-m", "alembic", "upgrade", "head"],
+        check=True
+    )
+
     worker = Worker(worker_id="worker_1", timeout_sec=300, reg=registry)
     reaper = Reaper(interval=10)
     scheduler = Scheduler(interval=5)
@@ -31,7 +38,6 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(
-        main(),
-        loop_factory=loop_factory
-    )
+    if platform.system() == "Windows":
+        asyncio.set_event_loop_policy(asyncio._WindowsSelectorEventLoopPolicy())
+    asyncio.run(main())

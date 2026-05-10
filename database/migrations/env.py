@@ -12,8 +12,6 @@ from config.settings import settings
 
 from sqlalchemy.ext.asyncio import create_async_engine
 
-asyncio.set_event_loop_policy(asyncio._WindowsSelectorEventLoopPolicy())
-
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
