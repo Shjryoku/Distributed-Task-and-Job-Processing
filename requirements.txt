@@ -10,3 +10,6 @@ pydantic-settings
 psycopg
 prometheus-fastapi-instrumentator
 prometheus-client
+pytest
+pytest-asyncio
+httpx

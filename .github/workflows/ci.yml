@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: taskjob_db
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: toor
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+    
+    env:
+      POSTGRES_URI: postgresql+psycopg://admin:toor@localhost:5432/taskjob_db
+      REDIS_URI: redis://localhost:6379
+      PORT: 8000
+      DEBUG: false
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      
+      - name: Run migrations
+        run: alembic upgrade head
+      
+      - name: Run tests
+        run: pytest tests/ -v
