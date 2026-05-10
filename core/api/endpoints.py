@@ -5,8 +5,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.api.schemas import TaskCreate, TaskResponse, TaskSchedule, WorkerAssign
 from database.models import Task, Status
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, func
 from sqlalchemy.exc import IntegrityError
+from core.utils.metrics import queue_size
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -165,3 +166,15 @@ async def cancel_task(
     await db.refresh(task)
 
     return task
+
+@router.get("metrics/queue", status_code=200)
+async def get_queue_metrics(
+    db: AsyncSession = Depends(get_db)
+):
+    res = await db.execute(
+        select(func.count().where(Task.status == Status.PENDING))
+    )
+    count = res.scalar()
+    queue_size.set(count)
+
+    return {"queue_size", count}
